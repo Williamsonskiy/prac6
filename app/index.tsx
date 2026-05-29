@@ -6,10 +6,17 @@ import { Habit } from './storage'
 export default function Index() {
   const router = useRouter()
   
-  const [habits] = useState<Habit[]>([
+  const [habits, setHabits] = useState<Habit[]>([
     { id: 1, title: 'Прочитать книгу', done: false },
     { id: 2, title: 'Сделать зарядку', done: false },
   ])
+
+  function toggleHabit(id: number) {
+    const updated = habits.map(h =>
+      h.id === id ? { ...h, done: !h.done } : h
+    )
+    setHabits(updated)
+  }
 
   return (
     <View
@@ -68,7 +75,9 @@ export default function Index() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
         renderItem={({ item }) => (
-          <View
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => toggleHabit(item.id)}
             style={{
               borderRadius: 24,
               paddingHorizontal: 20,
@@ -83,8 +92,8 @@ export default function Index() {
               shadowOpacity: 0.05,
               shadowRadius: 3,
               elevation: 2,
-              backgroundColor: '#ffffff',
-              borderColor: '#e4e4e7',
+              backgroundColor: item.done ? '#f0fdf4' : '#ffffff',
+              borderColor: item.done ? '#bbf7d0' : '#e4e4e7',
             }}
           >
             <View style={{ flex: 1, paddingRight: 16 }}>
@@ -92,7 +101,8 @@ export default function Index() {
                 style={{
                   fontSize: 18,
                   fontWeight: '600',
-                  color: '#18181b',
+                  color: item.done ? '#a1a1aa' : '#18181b',
+                  textDecorationLine: item.done ? 'line-through' : 'none',
                 }}
               >
                 {item.title}
@@ -101,13 +111,28 @@ export default function Index() {
                 style={{
                   marginTop: 4,
                   fontSize: 14,
-                  color: '#a1a1aa',
+                  color: item.done ? '#16a34a' : '#a1a1aa',
                 }}
               >
-                В процессе
+                {item.done ? 'Сделано' : 'В процессе'}
               </Text>
             </View>
-          </View>
+
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 999,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: item.done ? '#22c55e' : '#e4e4e7',
+              }}
+            >
+              <Text style={{ color: '#ffffff', fontSize: 18 }}>
+                {item.done ? '✓' : ''}
+              </Text>
+            </View>
+          </TouchableOpacity>
         )}
       />
     </View>
