@@ -1,21 +1,45 @@
-import { useState } from 'react'
-import { View, Text, TouchableOpacity, FlatList } from 'react-native'
-import { useRouter } from 'expo-router'
-import { Habit } from './storage'
+import { useCallback, useState } from 'react'
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native'
+
+import { useRouter, useFocusEffect } from 'expo-router'
+
+import {
+  Habit,
+  getHabits,
+  saveHabits,
+} from './storage'
 
 export default function Index() {
   const router = useRouter()
-  
-  const [habits, setHabits] = useState<Habit[]>([
-    { id: 1, title: 'Прочитать книгу', done: false },
-    { id: 2, title: 'Сделать зарядку', done: false },
-  ])
 
-  function toggleHabit(id: number) {
+  const [habits, setHabits] = useState<Habit[]>([])
+
+  useFocusEffect(
+    useCallback(() => {
+      loadHabits()
+    }, [])
+  )
+
+  async function loadHabits() {
+    const data = await getHabits()
+    setHabits(data)
+  }
+
+  async function toggleHabit(id: number) {
     const updated = habits.map(h =>
-      h.id === id ? { ...h, done: !h.done } : h
+      h.id === id
+        ? { ...h, done: !h.done }
+        : h
     )
+
     setHabits(updated)
+
+    await saveHabits(updated)
   }
 
   return (
@@ -69,11 +93,31 @@ export default function Index() {
         </TouchableOpacity>
       </View>
 
+      {habits.length === 0 && (
+        <View
+          style={{
+            alignItems: 'center',
+            marginTop: 80,
+          }}
+        >
+          <Text
+            style={{
+              color: '#a1a1aa',
+              fontSize: 18,
+            }}
+          >
+            Привычек пока нет
+          </Text>
+        </View>
+      )}
+
       <FlatList
         data={habits}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
         renderItem={({ item }) => (
           <TouchableOpacity
             activeOpacity={0.85}
@@ -88,33 +132,54 @@ export default function Index() {
               justifyContent: 'space-between',
               borderWidth: 1,
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
+              shadowOffset: {
+                width: 0,
+                height: 1,
+              },
               shadowOpacity: 0.05,
               shadowRadius: 3,
               elevation: 2,
-              backgroundColor: item.done ? '#f0fdf4' : '#ffffff',
-              borderColor: item.done ? '#bbf7d0' : '#e4e4e7',
+              backgroundColor: item.done
+                ? '#f0fdf4'
+                : '#ffffff',
+              borderColor: item.done
+                ? '#bbf7d0'
+                : '#e4e4e7',
             }}
           >
-            <View style={{ flex: 1, paddingRight: 16 }}>
+            <View
+              style={{
+                flex: 1,
+                paddingRight: 16,
+              }}
+            >
               <Text
                 style={{
                   fontSize: 18,
                   fontWeight: '600',
-                  color: item.done ? '#a1a1aa' : '#18181b',
-                  textDecorationLine: item.done ? 'line-through' : 'none',
+                  color: item.done
+                    ? '#a1a1aa'
+                    : '#18181b',
+                  textDecorationLine: item.done
+                    ? 'line-through'
+                    : 'none',
                 }}
               >
                 {item.title}
               </Text>
+
               <Text
                 style={{
                   marginTop: 4,
                   fontSize: 14,
-                  color: item.done ? '#16a34a' : '#a1a1aa',
+                  color: item.done
+                    ? '#16a34a'
+                    : '#a1a1aa',
                 }}
               >
-                {item.done ? 'Сделано' : 'В процессе'}
+                {item.done
+                  ? 'Сделано'
+                  : 'В процессе'}
               </Text>
             </View>
 
@@ -125,10 +190,17 @@ export default function Index() {
                 borderRadius: 999,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: item.done ? '#22c55e' : '#e4e4e7',
+                backgroundColor: item.done
+                  ? '#22c55e'
+                  : '#e4e4e7',
               }}
             >
-              <Text style={{ color: '#ffffff', fontSize: 18 }}>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  fontSize: 18,
+                }}
+              >
                 {item.done ? '✓' : ''}
               </Text>
             </View>
